@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
+from utils import add_title
 
 base_activities = ['happy', 'excited', 'grateful', 'relaxed', 
                    'content', 'tired', 'unsure', 'bored', 'anxious', 
@@ -33,7 +34,6 @@ categories = {"Emotions": ['happy', 'excited', 'grateful',
 mood_ordering = ['awful', 'bad', 'meh', 'good', 'rad']
 
 
-uploaded_file = st.file_uploader("Upload CSV file", type=["csv"])
 @st.cache_data
 def load_and_prep_data(file):
     df = pd.read_csv(file)
@@ -59,19 +59,37 @@ def load_and_prep_data(file):
 
     return df, df_joined
 
+add_title()
+st.markdown('''
+# Howdy!
+
+This app is here to support you in understanding your Daylio Mood Tracking information in a relaxed and therapeutic way.
+
+To begin, follow these steps:
+
+1. Open your Daylio app.
+2. Go to More > Export Entries > CSV (table).
+3. Download your data.
+4. Upload the data here.
+5. Explore the tabs on the left-hand side.
+
+None of your data is stored on our end. 
+''')
+
+uploaded_file = st.file_uploader("Upload Your Daylio Data", type=["csv"])
+
 if uploaded_file or 'df' in st.session_state:
-    df = None
-    df_encoded = None
-    if uploaded_file:
-        df, df_encoded = load_and_prep_data(uploaded_file)
-        st.session_state.df = df
-        st.session_state.df_encoded = df_encoded
-    elif 'df' in st.session_state:
-        df = st.session_state.df
-        df_encoded = st.session_state.df_encoded
-    st.write(df)
-
-
-
-    st.sidebar.success("Testing.")
-
+    try:
+        df = None
+        df_encoded = None
+        if uploaded_file:
+            df, df_encoded = load_and_prep_data(uploaded_file)
+            st.session_state.df = df
+            st.session_state.df_encoded = df_encoded
+        elif 'df' in st.session_state:
+            df = st.session_state.df
+            df_encoded = st.session_state.df_encoded
+        st.success("Upload successful. Check out the Activities Over Time page!")
+        st.write(df)
+    except:
+        st.write("Hmm... that didn't work.")

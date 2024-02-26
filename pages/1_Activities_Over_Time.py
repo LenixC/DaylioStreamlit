@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from utils import add_title
 
 st.set_page_config(layout="wide")
 
@@ -33,6 +34,13 @@ categories = {"Emotions": ['happy', 'excited', 'grateful',
 }
 mood_ordering = ['awful', 'bad', 'meh', 'good', 'rad']
 weekday_ordering = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+
+add_title()
+st.markdown('''
+    # Activities Over Time 
+    This page shows some core features of your mental health 
+    and allows you to explore activities on a week by week basis.
+    ''')
 
 def add_date_slider(fig):
     fig.update_layout(
@@ -70,12 +78,20 @@ def plot_moods(category, df_encoded, is_percent):
     df_week_group = df_encoded.copy().drop(columns=['date_exp', 'weekday', 'time', 'mood'])
     df_week_group['full_date'] = pd.to_datetime(df_week_group['full_date'])
     df_weekly = df_week_group.resample('W-Mon', on='full_date').sum()
+    title = "Count of Occurrence per Week"
+    value = "Count"
 
     if is_percent:
         df_weekly = df_weekly/7
+        title = "Percent of Occurences per Week"
+        value = "Percent"
 
     fig = px.line(df_weekly, x=df_weekly.index, 
-                    y=activity_selections)
+                  y=activity_selections,
+                  title=title,
+                  labels={'full_date': 'Week of ',
+                          'value': value,
+                          'variable': 'Activity'})
     add_date_slider(fig)
 
     if is_percent:
@@ -88,15 +104,20 @@ def plot_day_of_week(category, activities, is_percent):
     day_of_week_df = df_encoded.groupby('weekday')[category].sum()
     day_of_week_df = day_of_week_df.reindex(weekday_ordering)
     title = "Count by Weekday"
+    value = "Count"
     if is_percent:
         day_of_week_df = day_of_week_df/7
         title = "Percent Occurrence on Weekday"
+        value = "Percent"
 
     fig = px.bar(day_of_week_df, 
                 x=activities,
                 y=day_of_week_df.index,
                 barmode='group',
-                title=title)
+                title=title,
+                labels={'full_date': 'Week of ',
+                          'value': value,
+                          'variable': 'Activity'})
     fig.update_layout(yaxis_title=None,
                       legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1))
     if is_percent:
@@ -117,7 +138,9 @@ def plot_overall_counts(df_encoded, category):
     fig = px.bar(overall_counts_df,
                     x=overall_counts_df,
                     y=overall_counts_df.index,
-                    title="Overall Counts in " + category)
+                    title="Overall Counts in " + category,
+                    labels={'x': 'Total Count', 
+                            'index': 'Activity'})
     return fig
 
 
@@ -136,9 +159,10 @@ def plot_heatmap(df_encoded, category, is_percent):
     
     if is_percent:
         df_weekly = (df_weekly/7).applymap(lambda x: f'{x: .2g}')
-    
+
     fig = px.imshow(df_weekly,
-                    text_auto=True,)
+                    text_auto=True)
+    fig.update_layout(xaxis=dict(title='Week of'))
     fig.update_coloraxes(showscale=False)
     return fig
 
@@ -147,21 +171,23 @@ if 'df' in st.session_state:
     df = st.session_state.df
     df_encoded = st.session_state.df_encoded
     category_selection = st.selectbox(
-        'Select an option',
+        'Select a Category',
         ['Moods'] + list(categories.keys()) + ['All']
     )
 
     if category_selection == 'Moods':
         is_overall = st.toggle('Overall Moods', value=True)
         if is_overall:
-            fig = px.line(df_encoded, x='full_date', y='mood')
+            fig = px.line(df_encoded, x='full_date', y='mood',
+                          labels={'mood': 'Mood',
+                                  'full_date': 'Week of'})
             fig.update_yaxes(categoryorder='array', categoryarray=mood_ordering,
                             range=[-0.5, 5.0])
             add_date_slider(fig)
             st.plotly_chart(fig, use_container_width=True)
         else:
             activity_selections = st.multiselect(
-                'Select options',
+                'Select Moods',
                 mood_ordering,
             )
             is_percent = st.checkbox('Percentage?')
@@ -183,7 +209,7 @@ if 'df' in st.session_state:
                 st.plotly_chart(fig, use_container_width=True)
     elif category_selection == 'All':
         activity_selections = st.multiselect(
-            'Select options',
+            'Select Activities',
             mood_ordering + base_activities,
         )
         is_percent = st.checkbox('Percentage?')
@@ -207,7 +233,7 @@ if 'df' in st.session_state:
             st.plotly_chart(fig, use_container_width=True)
     else:
         activity_selections = st.multiselect(
-            'Select options',
+            'Select Activities',
             categories[category_selection],
         )
         is_percent = st.checkbox('Percentage?')
@@ -227,4 +253,5 @@ if 'df' in st.session_state:
             st.plotly_chart(fig, use_container_width=True)
             fig = plot_heatmap(df_encoded, category_selection, is_percent)
             st.plotly_chart(fig, use_container_width=True)
-
+else:
+    st.error("Try uploading something in the Upload Data page.")
