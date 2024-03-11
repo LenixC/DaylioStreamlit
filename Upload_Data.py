@@ -39,6 +39,14 @@ def mode_with_ties(series):
     return mode_result[0] if not mode_result.empty else None
 
 
+def safe_mode(series):
+    mode_counts = series.value_counts()
+    if len(mode_counts) > 1:
+        return mode_counts.index[1]  # Second most common value
+    else:
+        return series.mode().iloc[0]
+
+
 @st.cache_data
 def load_and_prep_data(file):
     df = pd.read_csv(file, parse_dates=['full_date'], index_col=['full_date'])
@@ -95,6 +103,11 @@ if uploaded_file or 'df' in st.session_state:
             df = st.session_state.df
             df_encoded = st.session_state.df_encoded
         st.success("Upload successful. Check out the Activities Over Time page!")
-        st.write(df)
+        st.write('Would you like us to fill in the missing data using the most common value?')
+        if st.checkbox('Yes'):
+            df_encoded = df_encoded.resample('D').agg(mode_with_ties)
+            df_encoded[base_activities + mood_ordering + ['mood']] = df_encoded[base_activities + mood_ordering + ['mood']].apply(lambda x: x.fillna(safe_mode(x)))
+        st.write()
+        st.write(df_encoded)
     except:
         st.write("Hmm... that didn't work.")
