@@ -91,16 +91,14 @@ None of your data is stored on our end.
 
 uploaded_file = st.file_uploader("Upload Your Daylio Data", type=["csv"])
 
-if uploaded_file or 'df' in st.session_state:
+if uploaded_file or 'df_encoded' in st.session_state:
     try:
         df = None
         df_encoded = None
         if uploaded_file:
             df, df_encoded = load_and_prep_data(uploaded_file)
-            st.session_state.df = df
             st.session_state.df_encoded = df_encoded
         elif 'df' in st.session_state:
-            df = st.session_state.df
             df_encoded = st.session_state.df_encoded
         st.success("Upload successful. Check out the Activities Over Time page!")
         st.write('Would you like us to fill in the missing data using the most common value?')

@@ -63,7 +63,7 @@ def phi_correlation_sets(set1, set2, df):
     return phi_results.transpose()
 
 
-if 'df' in st.session_state:
+if 'df_encoded' in st.session_state:
     df_encoded = st.session_state.df_encoded
 
     col_names = [df_encoded[col].name for col in base_activities]

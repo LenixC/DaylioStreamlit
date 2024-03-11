@@ -165,8 +165,7 @@ def plot_heatmap(df_encoded, category, is_percent):
     return fig
 
 
-if 'df' in st.session_state:
-    df = st.session_state.df
+if 'df_encoded' in st.session_state:
     df_encoded = st.session_state.df_encoded
     category_selection = st.selectbox(
         'Select a Category',
