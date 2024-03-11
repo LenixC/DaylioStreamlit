@@ -3,8 +3,6 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 from mlxtend.frequent_patterns import apriori
-from mlxtend.frequent_patterns import association_rules
-from scipy.stats import chi2_contingency
 from utils import add_title
 
 base_activities = ['happy', 'excited', 'grateful', 'relaxed', 
