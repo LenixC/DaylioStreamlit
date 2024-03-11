@@ -43,26 +43,6 @@ Here, we analyze your activities to find the most common relationships through f
 ''')
 
 
-def phi_coefficient(col1, col2, df):
-    try:
-        contingency_table = pd.crosstab(df[col1], df[col2])
-        a = contingency_table.iloc[0, 0]
-        b = contingency_table.iloc[0, 1]
-        c = contingency_table.iloc[1, 0]
-        d = contingency_table.iloc[1, 1]
-        phi = (a*d - b*c) / np.sqrt((a + b) * (c + d) * (a + c) * (b + d))
-        return phi
-    except:
-        return 0
-
-def phi_correlation_sets(set1, set2, df):
-    phi_results = pd.DataFrame(index=set1, columns=set2)
-    for col1 in set1:
-        for col2 in set2:
-            phi_results.at[col1, col2] = phi_coefficient(col1, col2, df)
-    return phi_results.transpose()
-
-
 if 'df' in st.session_state:
     df_encoded = st.session_state.df_encoded
 
@@ -71,7 +51,6 @@ if 'df' in st.session_state:
 
     frequent_itemsets = apriori(items, min_support=0.3, use_colnames=True)
     frequent_itemsets['itemsets'] = frequent_itemsets['itemsets'].apply(list)
-    st.write(frequent_itemsets.sort_values(by='support', ascending=False).set_index('support'))
     sorted_freq_items = frequent_itemsets.sort_values('support', ascending=False)
     sorted_freq_items['length'] = sorted_freq_items['itemsets'].apply(lambda x: len(x))
     two_plus_itemsets = sorted_freq_items[(sorted_freq_items['length'] >= 2) & (frequent_itemsets['support'] >= .5)].sort_values(by=['support'], ascending=False)
@@ -83,8 +62,11 @@ if 'df' in st.session_state:
                  x='support',
                  y='itemsets',
                  orientation='h')
+    fig.update_layout(showlegend=False,
+                      height=800)
 
     st.plotly_chart(fig, use_container_width=True)
+    st.write(frequent_itemsets.sort_values(by='support', ascending=False).set_index('support'))
 
 else:
     st.error("Try uploading something in the Upload Data page.")
