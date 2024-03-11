@@ -101,7 +101,7 @@ if uploaded_file or 'df_encoded' in st.session_state:
             df_encoded = st.session_state.df_encoded
         st.success("Upload successful. Check out the Activities Over Time page!")
         st.write('Would you like us to fill in the missing data using the most common value?')
-        if st.checkbox('Yes'):
+        if st.button('Yes'):
             df_encoded = df_encoded.resample('D').agg(mode_with_ties)
             df_encoded[base_activities + ['mood']] = df_encoded[base_activities + ['mood']].apply(lambda x: x.fillna(safe_mode(x)))
             df_moods = pd.get_dummies(df_encoded['mood'])
