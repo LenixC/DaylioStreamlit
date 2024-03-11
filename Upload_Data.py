@@ -34,9 +34,14 @@ categories = {"Emotions": ['happy', 'excited', 'grateful',
 mood_ordering = ['awful', 'bad', 'meh', 'good', 'rad']
 
 
+def mode_with_ties(series):
+    mode_result = series.mode()
+    return mode_result[0] if not mode_result.empty else None
+
+
 @st.cache_data
 def load_and_prep_data(file):
-    df = pd.read_csv(file)
+    df = pd.read_csv(file, parse_dates=['full_date'], index_col=['full_date'])
     df['activities'] = df['activities'].str.split('|').apply(lambda x: [e.strip() for e in x])
     df = df.drop(columns=['note_title', 'note'])
     df['mood'] = pd.Categorical(df['mood'], categories=mood_ordering, ordered=True)

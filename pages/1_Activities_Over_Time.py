@@ -76,8 +76,7 @@ def add_date_slider(fig):
 
 def plot_moods(category, df_encoded, is_percent):
     df_week_group = df_encoded.copy().drop(columns=['date_exp', 'weekday', 'time', 'mood'])
-    df_week_group['full_date'] = pd.to_datetime(df_week_group['full_date'])
-    df_weekly = df_week_group.resample('W-Mon', on='full_date').sum()
+    df_weekly = df_week_group.resample('W-Mon').sum()
     title = "Count of Occurrence per Week"
     value = "Count"
 
@@ -146,8 +145,7 @@ def plot_overall_counts(df_encoded, category):
 
 def plot_heatmap(df_encoded, category, is_percent):
     df_week_group = df_encoded.copy().drop(columns=['date_exp', 'weekday', 'time', 'mood'])
-    df_week_group['full_date'] = pd.to_datetime(df_week_group['full_date'])
-    df_weekly = df_week_group.resample('W-Mon', on='full_date').sum()
+    df_weekly = df_week_group.resample('W-Mon').sum()
     if category == 'Moods':
         df_weekly = df_weekly[mood_ordering]
     elif category == 'All':
@@ -178,7 +176,7 @@ if 'df' in st.session_state:
     if category_selection == 'Moods':
         is_overall = st.toggle('Overall Moods', value=True)
         if is_overall:
-            fig = px.line(df_encoded, x='full_date', y='mood',
+            fig = px.line(df_encoded, x=df_encoded.index, y='mood',
                           labels={'mood': 'Mood',
                                   'full_date': 'Week of'})
             fig.update_yaxes(categoryorder='array', categoryarray=mood_ordering,
