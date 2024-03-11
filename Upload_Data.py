@@ -67,7 +67,6 @@ def load_and_prep_data(file):
     df_joined = (df.drop('activities', axis=1).join(df_activities))
     df_joined = (df_joined).join(df_moods)
 
-    st.session_state.df = df
     st.session_state.df_encoded = df_joined
 
     return df, df_joined
@@ -98,7 +97,7 @@ if uploaded_file or 'df_encoded' in st.session_state:
         if uploaded_file:
             df, df_encoded = load_and_prep_data(uploaded_file)
             st.session_state.df_encoded = df_encoded
-        elif 'df' in st.session_state:
+        elif 'df_encoded' in st.session_state:
             df_encoded = st.session_state.df_encoded
         st.success("Upload successful. Check out the Activities Over Time page!")
         st.write('Would you like us to fill in the missing data using the most common value?')
@@ -106,7 +105,6 @@ if uploaded_file or 'df_encoded' in st.session_state:
             df_encoded = df_encoded.resample('D').agg(mode_with_ties)
             df_encoded[base_activities + mood_ordering + ['mood']] = df_encoded[base_activities + mood_ordering + ['mood']].apply(lambda x: x.fillna(safe_mode(x)))
             st.session_state.df_encoded = df_encoded
-        st.write()
         st.write(df_encoded)
     except:
         st.write("Hmm... that didn't work.")
