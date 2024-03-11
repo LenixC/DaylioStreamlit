@@ -178,7 +178,7 @@ if 'df' in st.session_state:
         if is_overall:
             fig = px.line(df_encoded, x=df_encoded.index, y='mood',
                           labels={'mood': 'Mood',
-                                  'full_date': 'Week of'})
+                                  'full_date': 'Date'})
             fig.update_yaxes(categoryorder='array', categoryarray=mood_ordering,
                             range=[-0.5, 5.0])
             add_date_slider(fig)
