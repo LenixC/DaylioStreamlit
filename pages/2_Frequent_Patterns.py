@@ -44,8 +44,7 @@ Here, we analyze your activities to find the most common relationships through f
 if 'df' in st.session_state:
     df_encoded = st.session_state.df_encoded
 
-    items = df_encoded.drop(columns=['date_exp', 
-                                     'weekday', 'time', 'mood'])
+    items = df_encoded.filter(base_activities)
 
     frequent_itemsets = apriori(items, min_support=0.3, use_colnames=True)
     frequent_itemsets['itemsets'] = frequent_itemsets['itemsets'].apply(list)

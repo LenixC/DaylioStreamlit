@@ -107,6 +107,7 @@ if uploaded_file or 'df' in st.session_state:
         if st.checkbox('Yes'):
             df_encoded = df_encoded.resample('D').agg(mode_with_ties)
             df_encoded[base_activities + mood_ordering + ['mood']] = df_encoded[base_activities + mood_ordering + ['mood']].apply(lambda x: x.fillna(safe_mode(x)))
+            st.session_state.df_encoded = df_encoded
         st.write()
         st.write(df_encoded)
     except:
