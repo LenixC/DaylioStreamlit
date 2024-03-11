@@ -103,7 +103,9 @@ if uploaded_file or 'df_encoded' in st.session_state:
         st.write('Would you like us to fill in the missing data using the most common value?')
         if st.checkbox('Yes'):
             df_encoded = df_encoded.resample('D').agg(mode_with_ties)
-            df_encoded[base_activities + mood_ordering + ['mood']] = df_encoded[base_activities + mood_ordering + ['mood']].apply(lambda x: x.fillna(safe_mode(x)))
+            df_encoded[base_activities + ['mood']] = df_encoded[base_activities + ['mood']].apply(lambda x: x.fillna(safe_mode(x)))
+            df_moods = pd.get_dummies(df_encoded['mood'])
+            df_encoded = df_encoded.drop(columns=mood_ordering).join(df_moods)
             st.session_state.df_encoded = df_encoded
         st.write(df_encoded)
     except:
