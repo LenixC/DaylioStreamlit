@@ -103,8 +103,8 @@ if 'df_encoded' in st.session_state:
                  x=phi_results[mood_select],
                  y=phi_results.index,
                  orientation='h',
-                 labels={'value': 'Correlation',
-                         'index': 'Activity'})
+                 labels={'x': 'Strength',
+                         'y': 'Activity'})
     fig.update_layout(showlegend=False,
                       height=800)
     st.plotly_chart(fig, use_container_width=True)
