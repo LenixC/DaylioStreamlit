@@ -41,6 +41,7 @@ if 'categories' in st.session_state:
     categories = st.session_state.categories
     base_activities = [value for sublist in categories.values() for value in sublist]
 
+
 add_title()
 st.markdown('''
 # Mood Associations

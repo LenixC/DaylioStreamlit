@@ -81,7 +81,7 @@ def add_date_slider(fig):
 
 
 def plot_moods(category, df_encoded, is_percent):
-    df_week_group = df_encoded.copy().drop(columns=['date_exp', 'weekday', 'time', 'mood'])
+    df_week_group = df_encoded.copy()[base_activities]
     df_weekly = df_week_group.resample('W-Mon').sum()
     title = "Count of Occurrence per Week"
     value = "Count"
@@ -150,7 +150,7 @@ def plot_overall_counts(df_encoded, category):
 
 
 def plot_heatmap(df_encoded, category, is_percent):
-    df_week_group = df_encoded.copy().drop(columns=['date_exp', 'weekday', 'time', 'mood'])
+    df_week_group = df_encoded.copy()[base_activities + mood_ordering]
     df_weekly = df_week_group.resample('W-Mon').sum()
     if category == 'Moods':
         df_weekly = df_weekly[mood_ordering]
@@ -257,7 +257,8 @@ if 'df_encoded' in st.session_state:
                 st.plotly_chart(fig, use_container_width=True)
                 fig = plot_heatmap(df_encoded, category_selection, is_percent)
                 st.plotly_chart(fig, use_container_width=True)
-    except:
+    except Exception as e:
+        st.write(e)
         st.error(f"An activity in {category_selection} is not present in your data.")
 else:
     st.error("Try uploading something in the Upload Data page.")

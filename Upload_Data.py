@@ -3,7 +3,9 @@ import pandas as pd
 import numpy as np
 import re
 import plotly.express as px
+import datetime
 from utils import add_title
+from sklearn.datasets import make_spd_matrix
 
 base_activities = ['happy', 'excited', 'grateful', 'relaxed', 
                    'content', 'tired', 'unsure', 'bored', 'anxious', 
@@ -95,6 +97,31 @@ def handle_categories(category):
         st.error("Something went wrong.")
 
 
+def gen_data():
+    num_days = 365
+    covariance_matrix = make_spd_matrix(len(base_activities))
+
+    data = np.random.multivariate_normal(mean=np.zeros(len(base_activities)),
+                                         cov=covariance_matrix,
+                                         size=num_days)
+
+    data = (data > 0.75).astype(int)
+
+    df = pd.DataFrame(data, columns=base_activities)
+    start_date = datetime.datetime.now() - datetime.timedelta(days=num_days-1)
+    df['full_date'] = pd.date_range(start=start_date,
+                                    periods=num_days,
+                                    freq='D')
+    df['full_date'] = pd.to_datetime(df['full_date'])
+    df['mood'] = np.random.choice(mood_ordering, size=num_days)
+    df = df[['full_date'] + ['mood'] + [col for col in df.columns if col != 'full_date' and col != 'mood']]
+    df = df.set_index('full_date')
+    df['weekday'] = df.index.strftime('%A')
+    df_moods = pd.get_dummies(df['mood'])
+    df = df.join(df_moods)
+    
+    st.session_state.df_encoded = df
+
 add_title()
 st.markdown('''
 # Howdy!
@@ -112,7 +139,16 @@ To begin, follow these steps:
 None of your data is stored on our end. 
 ''')
 
-uploaded_file = st.file_uploader("Upload Your Daylio Data", type=["csv"])
+upload_col, gen_col = st.columns(2)
+with upload_col:
+    st.markdown("##### Upload your Daylio Data")
+    uploaded_file = st.file_uploader("", type=["csv"])
+with gen_col:
+    st.markdown("##### Or generate some dummy data.")
+    gen_data_button = st.button("Generate Data")
+    if gen_data_button:
+        gen_data()
+    st.warning("Generated data does not have human behavior, so some pages won't be very interesting.")
 
 if uploaded_file or 'df_encoded' in st.session_state:
     try:
@@ -154,10 +190,6 @@ with st.expander('Customize Categories'):
         category_submitted = st.form_submit_button("Submit")
         if category_submitted:
             handle_categories(category_input)
-            #try:
-            #    load_and_prep_data(uploaded_file)
-            #except:
-            #    pass
     category_clean = st.button("Clear all customizations")
     if category_clean:
         st.session_state.categories = categories

@@ -49,7 +49,6 @@ Here, we analyze your activities to find the most common relationships through f
 
 if 'df_encoded' in st.session_state:
     df_encoded = st.session_state.df_encoded
-    st.write(df_encoded)
 
     items = df_encoded.filter(base_activities)
 
@@ -60,17 +59,20 @@ if 'df_encoded' in st.session_state:
     two_plus_itemsets = sorted_freq_items[(sorted_freq_items['length'] >= 2) & (frequent_itemsets['support'] >= .5)].sort_values(by=['support'], ascending=False)
     two_plus_itemsets['itemsets'] = two_plus_itemsets['itemsets'].apply(', '.join)
 
-    n_patterns = st.slider('Top n patterns', 1, len(two_plus_itemsets), 10)
+    if len(two_plus_itemsets) == 0:
+        st.markdown('#### No frequent patterns detected.')
+    else:
+        n_patterns = st.slider('Top n patterns', 1, len(two_plus_itemsets), 10)
 
-    fig = px.bar(two_plus_itemsets.head(n_patterns)[::-1],
-                 x='support',
-                 y='itemsets',
-                 orientation='h')
-    fig.update_layout(showlegend=False,
-                      height=800)
+        fig = px.bar(two_plus_itemsets.head(n_patterns)[::-1],
+                    x='support',
+                    y='itemsets',
+                    orientation='h')
+        fig.update_layout(showlegend=False,
+                        height=800)
 
-    st.plotly_chart(fig, use_container_width=True)
-    st.write(frequent_itemsets.sort_values(by='support', ascending=False).set_index('support'))
+        st.plotly_chart(fig, use_container_width=True)
+        st.write(frequent_itemsets.sort_values(by='support', ascending=False).set_index('support'))
 
 else:
     st.error("Try uploading something in the Upload Data page.")
