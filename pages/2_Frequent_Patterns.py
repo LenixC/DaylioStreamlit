@@ -49,6 +49,7 @@ Here, we analyze your activities to find the most common relationships through f
 
 if 'df_encoded' in st.session_state:
     df_encoded = st.session_state.df_encoded
+    st.write(df_encoded)
 
     items = df_encoded.filter(base_activities)
 

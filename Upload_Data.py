@@ -34,8 +34,13 @@ categories = {"Emotions": ['happy', 'excited', 'grateful',
 }
 mood_ordering = ['awful', 'bad', 'meh', 'good', 'rad']
 
-if 'categories' not in st.session_state:
+
+if 'categories' in st.session_state:
+    categories = st.session_state.categories
+    base_activities = [value for sublist in categories.values() for value in sublist]
+else:
     st.session_state.categories = categories
+
 
 def mode_with_ties(series):
     mode_result = series.mode()
@@ -80,6 +85,7 @@ def handle_categories(category):
         key = input[0]
         values = input[1:]
         if key in st.session_state.categories:
+            st.write("AH")
             st.session_state.categories[key].extend(values)
             st.success(f"{', '.join(values)} added to {key}!")
         else:
@@ -148,6 +154,10 @@ with st.expander('Customize Categories'):
         category_submitted = st.form_submit_button("Submit")
         if category_submitted:
             handle_categories(category_input)
+            #try:
+            #    load_and_prep_data(uploaded_file)
+            #except:
+            #    pass
     category_clean = st.button("Clear all customizations")
     if category_clean:
         st.session_state.categories = categories
