@@ -81,7 +81,7 @@ def add_date_slider(fig):
 
 
 def plot_moods(category, df_encoded, is_percent):
-    df_week_group = df_encoded.copy()[base_activities]
+    df_week_group = df_encoded.copy()[base_activities + mood_ordering]
     df_weekly = df_week_group.resample('W-Mon').sum()
     title = "Count of Occurrence per Week"
     value = "Count"
