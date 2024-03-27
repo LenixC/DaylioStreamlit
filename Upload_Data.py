@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import re
 import plotly.express as px
 from utils import add_title
 
@@ -33,6 +34,8 @@ categories = {"Emotions": ['happy', 'excited', 'grateful',
 }
 mood_ordering = ['awful', 'bad', 'meh', 'good', 'rad']
 
+if 'categories' not in st.session_state:
+    st.session_state.categories = categories
 
 def mode_with_ties(series):
     mode_result = series.mode()
@@ -70,6 +73,21 @@ def load_and_prep_data(file):
     st.session_state.df_encoded = df_joined
 
     return df, df_joined
+
+def handle_categories(category):
+    try:
+        input = re.split(r': |, ', category)
+        key = input[0]
+        values = input[1:]
+        if key in st.session_state.categories:
+            st.session_state.categories[key].extend(values)
+            st.success(f"{', '.join(values)} added to {key}!")
+        else:
+            st.session_state.categories[key] = values
+            st.success(f"Category {key} created with activities {', '.join(values)}")
+    except:
+        st.error("Something went wrong.")
+
 
 add_title()
 st.markdown('''
@@ -115,3 +133,21 @@ if uploaded_file or 'df_encoded' in st.session_state:
         st.write(df_encoded)
     except:
         st.write("Hmm... that didn't work.")
+
+
+with st.expander('Customize Categories'):
+    st.markdown('''
+                Please list your additional activities in the form of:
+
+                *Category: actvity_1, activity_2, ...*
+
+                Only add information already present in your data.
+                ''')
+    with st.form('category_form'):
+        category_input = st.text_input(label='Category and new activity')
+        category_submitted = st.form_submit_button("Submit")
+        if category_submitted:
+            handle_categories(category_input)
+    category_clean = st.button("Clear all customizations")
+    if category_clean:
+        st.session_state.categories = categories

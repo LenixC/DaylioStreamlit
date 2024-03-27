@@ -35,6 +35,11 @@ categories = {"Emotions": ['happy', 'excited', 'grateful',
 mood_ordering = ['awful', 'bad', 'meh', 'good', 'rad']
 weekday_ordering = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
+
+if 'categories' in st.session_state:
+    categories = st.session_state.categories
+    base_activities = [value for sublist in categories.values() for value in sublist]
+
 add_title()
 st.markdown('''
     # Activities Over Time 
@@ -166,89 +171,92 @@ def plot_heatmap(df_encoded, category, is_percent):
 
 
 if 'df_encoded' in st.session_state:
-    df_encoded = st.session_state.df_encoded
-    category_selection = st.selectbox(
-        'Select a Category',
-        ['Moods'] + list(categories.keys()) + ['All']
-    )
+    try:
+        df_encoded = st.session_state.df_encoded
+        category_selection = st.selectbox(
+            'Select a Category',
+            ['Moods'] + list(categories.keys()) + ['All']
+        )
 
-    if category_selection == 'Moods':
-        is_overall = st.toggle('Overall Moods', value=True)
-        if is_overall:
-            fig = px.line(df_encoded, x=df_encoded.index, y='mood',
-                          labels={'mood': 'Mood',
-                                  'full_date': 'Date'})
-            fig.update_yaxes(categoryorder='array', categoryarray=mood_ordering,
-                            range=[-0.5, 5.0])
-            add_date_slider(fig)
-            st.plotly_chart(fig, use_container_width=True)
-        else:
+        if category_selection == 'Moods':
+            is_overall = st.toggle('Overall Moods', value=True)
+            if is_overall:
+                fig = px.line(df_encoded, x=df_encoded.index, y='mood',
+                            labels={'mood': 'Mood',
+                                    'full_date': 'Date'})
+                fig.update_yaxes(categoryorder='array', categoryarray=mood_ordering,
+                                range=[-0.5, 5.0])
+                add_date_slider(fig)
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                activity_selections = st.multiselect(
+                    'Select Moods',
+                    mood_ordering,
+                )
+                is_percent = st.checkbox('Percentage?')
+                if activity_selections:
+                    plot_moods(mood_ordering, df_encoded, is_percent)
+                    fig= plot_day_of_week(mood_ordering, activity_selections, is_percent)
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.plotly_chart(fig, use_container_width=True)
+                    fig = plot_overall_counts(df_encoded, 'Moods')
+                    with col2:
+                        st.plotly_chart(fig, use_container_width=True)
+                    fig = plot_heatmap(df_encoded, category_selection, is_percent)
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    fig = plot_overall_counts(df_encoded, 'Moods')
+                    st.plotly_chart(fig, use_container_width=True)
+                    fig = plot_heatmap(df_encoded, category_selection, is_percent)
+                    st.plotly_chart(fig, use_container_width=True)
+        elif category_selection == 'All':
             activity_selections = st.multiselect(
-                'Select Moods',
-                mood_ordering,
+                'Select Activities',
+                mood_ordering + base_activities,
             )
             is_percent = st.checkbox('Percentage?')
             if activity_selections:
-                plot_moods(mood_ordering, df_encoded, is_percent)
-                fig= plot_day_of_week(mood_ordering, activity_selections, is_percent)
+                plot_moods(mood_ordering + base_activities, df_encoded, is_percent)
+                plot_day_of_week(mood_ordering + base_activities, activity_selections, is_percent)
+                plot_overall_counts(df_encoded, category_selection)
                 col1, col2 = st.columns(2)
+                fig = plot_day_of_week(mood_ordering + base_activities, activity_selections, is_percent)
                 with col1:
                     st.plotly_chart(fig, use_container_width=True)
-                fig = plot_overall_counts(df_encoded, 'Moods')
+                fig = plot_overall_counts(df_encoded, category_selection)
                 with col2:
                     st.plotly_chart(fig, use_container_width=True)
                 fig = plot_heatmap(df_encoded, category_selection, is_percent)
                 st.plotly_chart(fig, use_container_width=True)
             else:
-                fig = plot_overall_counts(df_encoded, 'Moods')
+                fig = plot_overall_counts(df_encoded, category_selection)
                 st.plotly_chart(fig, use_container_width=True)
                 fig = plot_heatmap(df_encoded, category_selection, is_percent)
                 st.plotly_chart(fig, use_container_width=True)
-    elif category_selection == 'All':
-        activity_selections = st.multiselect(
-            'Select Activities',
-            mood_ordering + base_activities,
-        )
-        is_percent = st.checkbox('Percentage?')
-        if activity_selections:
-            plot_moods(mood_ordering + base_activities, df_encoded, is_percent)
-            plot_day_of_week(mood_ordering + base_activities, activity_selections, is_percent)
-            plot_overall_counts(df_encoded, category_selection)
-            col1, col2 = st.columns(2)
-            fig = plot_day_of_week(mood_ordering + base_activities, activity_selections, is_percent)
-            with col1:
-                st.plotly_chart(fig, use_container_width=True)
-            fig = plot_overall_counts(df_encoded, category_selection)
-            with col2:
-                st.plotly_chart(fig, use_container_width=True)
-            fig = plot_heatmap(df_encoded, category_selection, is_percent)
-            st.plotly_chart(fig, use_container_width=True)
         else:
-            fig = plot_overall_counts(df_encoded, category_selection)
-            st.plotly_chart(fig, use_container_width=True)
-            fig = plot_heatmap(df_encoded, category_selection, is_percent)
-            st.plotly_chart(fig, use_container_width=True)
-    else:
-        activity_selections = st.multiselect(
-            'Select Activities',
-            categories[category_selection],
-        )
-        is_percent = st.checkbox('Percentage?')
-        if activity_selections:
-            plot_moods(categories[category_selection], df_encoded, is_percent)
-            col1, col2 = st.columns(2)
-            fig = plot_day_of_week(categories[category_selection], activity_selections, is_percent)
-            with col1:
+            activity_selections = st.multiselect(
+                'Select Activities',
+                categories[category_selection],
+            )
+            is_percent = st.checkbox('Percentage?')
+            if activity_selections:
+                plot_moods(categories[category_selection], df_encoded, is_percent)
+                col1, col2 = st.columns(2)
+                fig = plot_day_of_week(categories[category_selection], activity_selections, is_percent)
+                with col1:
+                    st.plotly_chart(fig, use_container_width=True)
+                fig = plot_overall_counts(df_encoded, category_selection)
+                with col2:
+                    st.plotly_chart(fig, use_container_width=True)
+                fig = plot_heatmap(df_encoded, category_selection, is_percent)
                 st.plotly_chart(fig, use_container_width=True)
-            fig = plot_overall_counts(df_encoded, category_selection)
-            with col2:
+            else:
+                fig = plot_overall_counts(df_encoded, category_selection,)
                 st.plotly_chart(fig, use_container_width=True)
-            fig = plot_heatmap(df_encoded, category_selection, is_percent)
-            st.plotly_chart(fig, use_container_width=True)
-        else:
-            fig = plot_overall_counts(df_encoded, category_selection,)
-            st.plotly_chart(fig, use_container_width=True)
-            fig = plot_heatmap(df_encoded, category_selection, is_percent)
-            st.plotly_chart(fig, use_container_width=True)
+                fig = plot_heatmap(df_encoded, category_selection, is_percent)
+                st.plotly_chart(fig, use_container_width=True)
+    except:
+        st.error(f"An activity in {category_selection} is not present in your data.")
 else:
     st.error("Try uploading something in the Upload Data page.")

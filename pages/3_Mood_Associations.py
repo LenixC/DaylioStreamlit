@@ -36,6 +36,11 @@ categories = {"Emotions": ['happy', 'excited', 'grateful',
 }
 mood_ordering = ['awful', 'bad', 'meh', 'good', 'rad']
 
+
+if 'categories' in st.session_state:
+    categories = st.session_state.categories
+    base_activities = [value for sublist in categories.values() for value in sublist]
+
 add_title()
 st.markdown('''
 # Mood Associations
@@ -62,54 +67,55 @@ def phi_correlation_sets(set1, set2, df):
             phi_results.at[col1, col2] = phi_coefficient(col1, col2, df)
     return phi_results.transpose()
 
+try:
+    if 'df_encoded' in st.session_state:
+        df_encoded = st.session_state.df_encoded
 
-if 'df_encoded' in st.session_state:
-    df_encoded = st.session_state.df_encoded
+        col_names = [df_encoded[col].name for col in base_activities]
 
-    col_names = [df_encoded[col].name for col in base_activities]
+        negative_mode = ['awful', 'bad']
+        positive_mode = ['good', 'rad']
 
-    negative_mode = ['awful', 'bad']
-    positive_mode = ['good', 'rad']
+        df_joined_moods = df_encoded.copy()
+        df_joined_moods['negative moods'] = df_joined_moods['awful'] + df_joined_moods['bad']
+        df_joined_moods['positive moods'] = df_joined_moods['good'] + df_joined_moods['rad']
+        corr_joined = df_joined_moods[base_activities 
+            + ['negative moods', 'meh', 'positive moods']].corr(method='spearman')[['negative moods', 'meh', 'positive moods']]
 
-    df_joined_moods = df_encoded.copy()
-    df_joined_moods['negative moods'] = df_joined_moods['awful'] + df_joined_moods['bad']
-    df_joined_moods['positive moods'] = df_joined_moods['good'] + df_joined_moods['rad']
-    corr_joined = df_joined_moods[base_activities 
-        + ['negative moods', 'meh', 'positive moods']].corr(method='spearman')[['negative moods', 'meh', 'positive moods']]
+        correlations = df_encoded[base_activities + mood_ordering].corr(method='spearman')[mood_ordering]
 
-    correlations = df_encoded[base_activities + mood_ordering].corr(method='spearman')[mood_ordering]
+        mood_select = st.selectbox(
+            'Select a Mood',
+            ('negative moods', 'meh', 'positive moods', 'awful', 'bad', 'meh', 'good', 'rad'),
+        )
 
+        df_joined_moods[base_activities] = df_joined_moods[base_activities].fillna(0)
 
-    mood_select = st.selectbox(
-        'Select a Mood',
-        ('negative moods', 'meh', 'positive moods', 'awful', 'bad', 'meh', 'good', 'rad'),
-    )
+        set1 = []
+        set2 = [col for col in base_activities if df_encoded[col].nunique() == 2]
 
-    df_joined_moods[base_activities] = df_joined_moods[base_activities].fillna(0)
+        if mood_select in ['negative moods', 'meh', 'positive moods']:
+            set1 = ['negative moods', 'meh', 'positive moods']
+        else:
+            set1 = ['awful', 'bad', 'meh', 'good', 'rad']
+        phi_results = phi_correlation_sets(set1, set2, df_joined_moods.dropna())
 
-    set1 = []
-    set2 = [col for col in base_activities if df_encoded[col].nunique() == 2]
+        if st.checkbox('Sorted?'):
+            phi_results = phi_results.sort_values(by=mood_select)
 
-    if mood_select in ['negative moods', 'meh', 'positive moods']:
-        set1 = ['negative moods', 'meh', 'positive moods']
+        fig = px.bar(phi_results.dropna(),
+                    x=phi_results[mood_select],
+                    y=phi_results.index,
+                    orientation='h',
+                    labels={'x': 'Strength',
+                            'y': 'Activity'})
+        fig.update_layout(showlegend=False,
+                        height=800)
+        st.plotly_chart(fig, use_container_width=True)
+
+        st.write(phi_results)
+
     else:
-        set1 = ['awful', 'bad', 'meh', 'good', 'rad']
-    phi_results = phi_correlation_sets(set1, set2, df_joined_moods.dropna())
-
-    if st.checkbox('Sorted?'):
-        phi_results = phi_results.sort_values(by=mood_select)
-
-    fig = px.bar(phi_results.dropna(),
-                 x=phi_results[mood_select],
-                 y=phi_results.index,
-                 orientation='h',
-                 labels={'x': 'Strength',
-                         'y': 'Activity'})
-    fig.update_layout(showlegend=False,
-                      height=800)
-    st.plotly_chart(fig, use_container_width=True)
-
-    st.write(phi_results)
-
-else:
-    st.error("Try uploading something in the Upload Data page.")
+        st.error("Try uploading something in the Upload Data page.")
+except:
+    st.error("Something went wrong. Make sure that any custom categories are in your data.")

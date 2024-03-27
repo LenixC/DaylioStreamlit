@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
+import re
 from mlxtend.frequent_patterns import apriori
 from utils import add_title
 
@@ -33,12 +34,6 @@ categories = {"Emotions": ['happy', 'excited', 'grateful',
               "Chores": ['shopping', 'cleaning', 'cooking', 'laundry']
 }
 mood_ordering = ['awful', 'bad', 'meh', 'good', 'rad']
-
-
-if 'categories' in st.session_state:
-    categories = st.session_state.categories
-    base_activities = [value for sublist in categories.values() for value in sublist]
-
 
 add_title()
 st.markdown('''
