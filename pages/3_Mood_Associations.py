@@ -42,7 +42,7 @@ if 'categories' in st.session_state:
     base_activities = [value for sublist in categories.values() for value in sublist]
 
 
-add_title()
+#add_title()
 st.markdown('''
 # Mood Associations
 This page employs the phi coefficient to identify which activities have the most significant impact on your mood. Larger numbers indicate that an activity is commonly associated with that mood, while negative numbers suggest that the activity is often associated with the absence of that mood.

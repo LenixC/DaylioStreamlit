@@ -40,7 +40,7 @@ if 'categories' in st.session_state:
     base_activities = [value for sublist in categories.values() for value in sublist]
 
 
-add_title()
+#add_title()
 st.markdown('''
 # Frequent Patterns
 Here, we analyze your activities to find the most common relationships through frequent pattern analysis. Support serves as a measure indicating how frequently these patterns occur in your data—higher numbers indicate more prevalent patterns.

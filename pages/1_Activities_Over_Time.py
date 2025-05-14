@@ -41,7 +41,7 @@ if 'categories' in st.session_state:
     base_activities = [value for sublist in categories.values() for value in sublist]
 
 
-add_title()
+#add_title()
 st.markdown('''
     # Activities Over Time 
     This page shows some core features of your mental health 
