@@ -122,7 +122,7 @@ def gen_data():
     
     st.session_state.df_encoded = df
 
-add_title()
+#add_title()
 st.markdown('''
 # Howdy!
 
